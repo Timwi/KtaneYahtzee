@@ -33,6 +33,7 @@ public class YahtzeeModule : MonoBehaviour
     private bool[] _wasKept;
     private int _lastRolled;
     private bool _isSolved;
+    private Coroutine[] _coroutines;
 
     public KMSelectable RollButton;
 
@@ -49,6 +50,7 @@ public class YahtzeeModule : MonoBehaviour
         _wasKept = new bool[Dice.Length];
         _diceValues = new int[Dice.Length];
         _diceLocations = new Vector3[Dice.Length];
+        _coroutines = new Coroutine[Dice.Length];
 
         foreach (var dice in DiceParent)
             dice.gameObject.SetActive(false);
@@ -336,7 +338,11 @@ public class YahtzeeModule : MonoBehaviour
 
             var sorted = Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] == null).OrderBy(ix => _diceLocations[ix].z).ToArray();
             for (int i = 0; i < sorted.Length; i++)
-                StartCoroutine(rollDice(new Vector3(-.1f, .1f, -.069f + .1f * i / sorted.Length), sorted[i]));
+            {
+                if (_coroutines[sorted[i]] != null)
+                    StopCoroutine(_coroutines[sorted[i]]);
+                _coroutines[sorted[i]] = StartCoroutine(rollDice(new Vector3(-.1f, .1f, -.069f + .1f * i / sorted.Length), sorted[i]));
+            }
 
             _lastRolled = _keptDiceSlot.Count(kept => kept == null);
             if (_diceValues.Distinct().Count() == 1)
@@ -365,6 +371,9 @@ public class YahtzeeModule : MonoBehaviour
             if (_isSolved)
                 return false;
 
+            if (_coroutines[i] != null)
+                StopCoroutine(_coroutines[i]);
+
             if (_keptDiceSlot[i] == null)
             {
                 var firstFreeSlot = Enumerable.Range(0, _restingPlaces.Length + 1).First(ix => ix == _restingPlaces.Length || !_keptDiceSlot.Contains(ix));
@@ -372,7 +381,7 @@ public class YahtzeeModule : MonoBehaviour
                     // The user tried to keep the fifth dice. Just disallow that.
                     return false;
                 _keptDiceSlot[i] = firstFreeSlot;
-                StartCoroutine(moveDice(i,
+                _coroutines[i] = StartCoroutine(moveDice(i,
                     startParentRotation: DiceParent[i].transform.localRotation,
                     endParentRotation: Quaternion.Euler(0, 0, 0),
                     startDiceRotation: Dice[i].transform.localRotation,
@@ -383,7 +392,7 @@ public class YahtzeeModule : MonoBehaviour
             else
             {
                 _keptDiceSlot[i] = null;
-                StartCoroutine(moveDice(i,
+                _coroutines[i] = StartCoroutine(moveDice(i,
                     startParentRotation: DiceParent[i].transform.localRotation,
                     endParentRotation: Quaternion.Euler(0, Rnd.Range(0, 360), 0),
                     startDiceRotation: Dice[i].transform.localRotation,
@@ -434,5 +443,6 @@ public class YahtzeeModule : MonoBehaviour
         DiceParent[ix].transform.localPosition = endLocation;
         Dice[ix].transform.localRotation = endDiceRotation;
         DiceParent[ix].transform.localRotation = endParentRotation;
+        _coroutines[ix] = null;
     }
 }
