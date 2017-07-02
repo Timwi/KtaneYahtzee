@@ -445,4 +445,44 @@ public class YahtzeeModule : MonoBehaviour
         DiceParent[ix].transform.localRotation = endParentRotation;
         _coroutines[ix] = null;
     }
+
+    private IEnumerator ProcessTwitchCommand(string command)
+    {
+        if (command == "roll")
+        {
+            yield return null;
+            RollButton.OnInteract();
+            yield return new WaitForSeconds(1.5f);
+        }
+        else if (command.StartsWith("keep "))
+        {
+            var diceToKeep = new List<KMSelectable>();
+            var diceToUnkeep = new List<KMSelectable>();
+            var list = command.Substring(5).Split(',').Select(s =>
+            {
+                foreach (var value in Enum.GetValues(typeof(DiceColor)))
+                    if (value.ToString().Equals(s, StringComparison.InvariantCultureIgnoreCase))
+                        return value as DiceColor?;
+                return null;
+            }).ToArray();
+
+            Debug.LogFormat("C={0}, A={1}, AC={2}", list.Contains(null), list.Any(c => c == null), Array.IndexOf(list, null) >= 0);
+
+            // Cannot use .Contains(null) because bug in Mono
+            if (list.Any(c => c == null))
+                yield break;
+
+            yield return null;
+            for (int i = 0; i < Dice.Length; i++)
+                if (list.Any(dc => dc == (DiceColor) i) != (_keptDiceSlot[i] != null))
+                {
+                    Debug.Log("Clicking " + (DiceColor) i);
+                    DiceParent[i].OnInteract();
+                    yield return new WaitForSeconds(.1f);
+                }
+
+            RollButton.OnInteract();
+            yield return new WaitForSeconds(1.5f);
+        }
+    }
 }
