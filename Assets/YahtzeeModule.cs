@@ -285,10 +285,10 @@ public class YahtzeeModule : MonoBehaviour
                         else if (numKeeping == 2 || (keptValue != null && Bomb.GetSerialNumberNumbers().Contains(keptValue.Value)))
                         {
                         }
-                        // Keep 3 allowed if purple or blue was kept in the previous stage
+                        // Keep 3 allowed if purple or white was kept in the previous stage
                         else if (numKeeping == 3 && !_wasKept[(int) DiceColor.Purple] && !_wasKept[(int) DiceColor.Blue])
                         {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping 3 only allowed if purple or blue was kept in the previous stage. Strike.", _moduleId);
+                            Debug.LogFormat("[Yahtzee #{0}] Keeping 3 only allowed if purple or white was kept in the previous stage. Strike.", _moduleId);
                             Module.HandleStrike();
                             return false;
                         }
@@ -303,9 +303,9 @@ public class YahtzeeModule : MonoBehaviour
 
                     case 2:
                         // Keep 4 allowed if yellow was kept in the previous stage, or if fifth is 1 away in value from kept value
-                        if (numKeeping == 4 && !_wasKept[(int) DiceColor.Yellow] && _diceValues[Array.IndexOf(_keptDiceSlot, null)] != keptValue.Value - 1 && _diceValues[Array.IndexOf(_keptDiceSlot, null)] != keptValue.Value + 1)
+                        if (numKeeping == 4 && !_wasKept[(int) DiceColor.Yellow] && !_wasKept[(int) DiceColor.Blue] && _diceValues[Array.IndexOf(_keptDiceSlot, null)] != keptValue.Value - 1 && _diceValues[Array.IndexOf(_keptDiceSlot, null)] != keptValue.Value + 1)
                         {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping 4 only allowed if yellow was kept in the previous stage, or if fifth is 1 away in value from kept value. Strike.", _moduleId);
+                            Debug.LogFormat("[Yahtzee #{0}] Keeping 4 only allowed if yellow or blue was kept in the previous stage, or if fifth is 1 away in value from kept value. Strike.", _moduleId);
                             Module.HandleStrike();
                             return false;
                         }
