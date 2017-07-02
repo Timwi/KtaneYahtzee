@@ -275,7 +275,7 @@ public class YahtzeeModule : MonoBehaviour
                                 Module.HandleStrike();
                                 return false;
                             }
-                            else if (duplicatePorts && (numKeeping != 2 || Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] == null).Select(ix => _diceValues[ix]).Distinct().Count() != 1))
+                            else if (!duplicatePorts && (numKeeping != 2 || Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] == null).Select(ix => _diceValues[ix]).Distinct().Count() != 1))
                             {
                                 Debug.LogFormat("[Yahtzee #{0}] Full house and no duplicate port. Must reroll the triplet. Strike.", _moduleId);
                                 Module.HandleStrike();
