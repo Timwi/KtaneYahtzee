@@ -257,6 +257,12 @@ MonoBehaviour:
   Module: {fileID: 11429752}
   Audio: {fileID: 11496072}
   Dice:
+  - {fileID: 1000011170987142}
+  - {fileID: 1000011836955666}
+  - {fileID: 1000010460787162}
+  - {fileID: 1000012181136364}
+  - {fileID: 1000010650652588}
+  DiceParent:
   - {fileID: 114000011482197350}
   - {fileID: 114000010604509846}
   - {fileID: 114000012231213790}
@@ -307,6 +313,7 @@ GameObject:
   - 33: {fileID: 33000012980992926}
   - 23: {fileID: 23000013243388030}
   - 64: {fileID: 64000012631644160}
+  - 114: {fileID: 114000011962854066}
   m_Layer: 0
   m_Name: RollButton
   m_TagString: Untagged
@@ -324,6 +331,7 @@ GameObject:
   - 4: {fileID: 4000012024062298}
   - 33: {fileID: 33000012223723734}
   - 23: {fileID: 23000013881409382}
+  - 114: {fileID: 114000010800971298}
   m_Layer: 0
   m_Name: Blue Dice
   m_TagString: Untagged
@@ -341,6 +349,7 @@ GameObject:
   - 4: {fileID: 4000013924507462}
   - 33: {fileID: 33000010840228838}
   - 23: {fileID: 23000011370190936}
+  - 114: {fileID: 114000013833129434}
   m_Layer: 0
   m_Name: BlackDice
   m_TagString: Untagged
@@ -390,6 +399,7 @@ GameObject:
   - 4: {fileID: 4000010454682514}
   - 33: {fileID: 33000010754627982}
   - 23: {fileID: 23000013480314152}
+  - 114: {fileID: 114000011590366370}
   m_Layer: 0
   m_Name: White Dice
   m_TagString: Untagged
@@ -424,7 +434,7 @@ GameObject:
   - 4: {fileID: 4000013647587948}
   - 114: {fileID: 114000010604509846}
   m_Layer: 0
-  m_Name: Red
+  m_Name: Purple
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -457,8 +467,9 @@ GameObject:
   - 4: {fileID: 4000010079733290}
   - 33: {fileID: 33000013719053350}
   - 23: {fileID: 23000010601752294}
+  - 114: {fileID: 114000012414885728}
   m_Layer: 0
-  m_Name: Red Dice
+  m_Name: Purple Dice
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -507,6 +518,7 @@ GameObject:
   - 4: {fileID: 4000012025484480}
   - 33: {fileID: 33000013128167756}
   - 23: {fileID: 23000014085557244}
+  - 114: {fileID: 114000010952250208}
   m_Layer: 0
   m_Name: Yellow Dice
   m_TagString: Untagged
@@ -591,6 +603,7 @@ GameObject:
   - 4: {fileID: 4000014280645280}
   - 33: {fileID: 33000011152123816}
   - 23: {fileID: 23000013666998128}
+  - 114: {fileID: 114000013734280842}
   m_Layer: 0
   m_Name: Playmat
   m_TagString: Untagged
@@ -608,6 +621,7 @@ GameObject:
   - 4: {fileID: 4000012227478248}
   - 33: {fileID: 33000012770617252}
   - 23: {fileID: 23000011935057638}
+  - 114: {fileID: 114000010735339680}
   m_Layer: 0
   m_Name: RollText
   m_TagString: Untagged
@@ -677,7 +691,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010669605058}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.025, z: -0.005}
+  m_LocalPosition: {x: 0.058, y: 0.026, z: -0.005}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -771,8 +785,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000014293465266}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.03, y: 0.025, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.03, y: 0.025, z: -0.01}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -788,7 +802,7 @@ Transform:
   m_GameObject: {fileID: 1000014170183484}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.0015, y: 0.0015, z: 0.0015}
+  m_LocalScale: {x: 0.002, y: 0.002, z: 0.002}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_Children: []
   m_Father: {fileID: 4000014167411524}
@@ -1286,6 +1300,47 @@ MonoBehaviour:
   AllowSelectionWrapY: 0
   ForceSelectionHighlight: 0
   ForceInteractionHighlight: 0
+--- !u!114 &114000010735339680
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000014170183484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Legacy Shaders/Specular
+--- !u!114 &114000010800971298
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010460787162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Legacy Shaders/Specular
+  - Legacy Shaders/Diffuse
+--- !u!114 &114000010952250208
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012181136364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Legacy Shaders/Specular
+  - Legacy Shaders/Diffuse
 --- !u!114 &114000011482197350
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1308,6 +1363,33 @@ MonoBehaviour:
   AllowSelectionWrapY: 0
   ForceSelectionHighlight: 0
   ForceInteractionHighlight: 0
+--- !u!114 &114000011590366370
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011170987142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Legacy Shaders/Specular
+  - Legacy Shaders/Diffuse
+--- !u!114 &114000011962854066
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010443018088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Legacy Shaders/Transparent/Specular
 --- !u!114 &114000011994720948
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1378,6 +1460,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   HighlightScale: {x: 1, y: 1, z: 1}
   OutlineAmount: 0
+--- !u!114 &114000012414885728
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011836955666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Legacy Shaders/Specular
+  - Legacy Shaders/Diffuse
 --- !u!114 &114000012514191572
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1461,6 +1557,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   HighlightScale: {x: 1, y: 1, z: 1}
   OutlineAmount: 0
+--- !u!114 &114000013734280842
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000014001471790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Legacy Shaders/Diffuse
 --- !u!114 &114000013758526718
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1474,3 +1583,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShaderNames:
   - Mobile/Diffuse
+--- !u!114 &114000013833129434
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010650652588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Legacy Shaders/Specular
+  - Legacy Shaders/Diffuse
