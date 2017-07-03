@@ -142,7 +142,7 @@ public class YahtzeeModule : MonoBehaviour
                             }
                             else
                             {
-                                validValue = Enumerable.Range(1, 6).Where(i => _diceValues.Count(val => val == i) < 3).Max();
+                                validValue = _diceValues.Where(i => _diceValues.Count(val => val == i) < 3).Max();
                                 Debug.LogFormat("[Yahtzee #{0}] Three of a kind and not enough indicators. Must keep highest value not in triplet, which is {1}.", _moduleId, validValue);
                             }
                         }
