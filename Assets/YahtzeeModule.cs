@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Yahtzee;
 using Rnd = UnityEngine.Random;
@@ -451,7 +452,24 @@ public class YahtzeeModule : MonoBehaviour
         if (_isSolved)
             yield break;
 
-        if (command == "roll")
+        Match m;
+        if ((m = Regex.Match(command, @"^roll until (\d)$")).Success)
+        {
+            var value = int.Parse(m.Groups[1].Value);
+            var iterations = 0;
+            do
+            {
+                RollButton.OnInteract();
+                yield return new WaitForSeconds(.1f);
+                if (++iterations > 47)
+                {
+                    yield return "sendtochat Giving up after 47 rolls.";
+                    yield break;
+                }
+            }
+            while (Enumerable.Range(0, Dice.Length).All(i => _wasKept[i] || _diceValues[i] != value));
+        }
+        else if (command == "roll")
             yield return null;
         else if (command.StartsWith("keep "))
         {
