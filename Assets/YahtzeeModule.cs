@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Yahtzee;
 using UnityEngine;
+using Yahtzee;
 using Rnd = UnityEngine.Random;
-using System.Collections;
 
 /// <summary>
 /// On the Subject of Yahtzee
@@ -333,7 +333,7 @@ public class YahtzeeModule : MonoBehaviour
                 var iterations = 0;
                 do { _diceLocations[i] = new Vector3(Rnd.Range(-.063f, .019f), .025f, Rnd.Range(-.069f, .028f)); }
                 while (_diceLocations.Where((loc, ix) => ix < i && (loc - _diceLocations[i]).magnitude < .03f).Any() && ++iterations < 1000);
-                _wasKept[i] = _keptDiceSlot != null;
+                _wasKept[i] = _keptDiceSlot[i] != null;
             }
 
             var sorted = Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] == null).OrderBy(ix => _diceLocations[ix].z).ToArray();
