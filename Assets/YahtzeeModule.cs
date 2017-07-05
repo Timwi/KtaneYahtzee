@@ -288,7 +288,7 @@ public class YahtzeeModule : MonoBehaviour
                         {
                         }
                         // Keep 3 allowed if purple or white was kept in the previous stage
-                        else if (numKeeping == 3 && !_wasKept[(int) DiceColor.Purple] && !_wasKept[(int) DiceColor.Blue])
+                        else if (numKeeping == 3 && !_wasKept[(int) DiceColor.Purple] && !_wasKept[(int) DiceColor.White])
                         {
                             Debug.LogFormat("[Yahtzee #{0}] Keeping 3 only allowed if purple or white was kept in the previous stage. Strike.", _moduleId);
                             Module.HandleStrike();
