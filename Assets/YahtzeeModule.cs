@@ -69,7 +69,7 @@ public class YahtzeeModule : MonoBehaviour
             // First roll ever?
             if (_lastRolled > 0)
             {
-                Debug.LogFormat("[Yahtzee #{0}] Attempting to keep {1}.", _moduleId, Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).Select(ix => string.Format("{0} ({1})", _diceValues[ix], (DiceColor) ix)).JoinString(", "));
+                Debug.LogFormat("[Yahtzee #{0}] Attempting to keep {1}.", _moduleId, Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).Select(ix => string.Format("{0} ({1})", _diceValues[ix], (DiceColor) ix)).DefaultIfEmpty("nothing").JoinString(", "));
 
                 // Trying to keep dice of different values is always invalid
                 int? keptValue = null;
