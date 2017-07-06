@@ -460,11 +460,17 @@ public class YahtzeeModule : MonoBehaviour
                 yield return new WaitForSeconds(.1f);
                 if (++iterations > 47)
                 {
-                    yield return "sendtochat Giving up after 47 rolls.";
+                    if(_isSolved)
+                        yield return "solve";
+                    else
+                        yield return "sendtochat Giving up after 47 rolls.";
                     yield break;
                 }
             }
             while (Enumerable.Range(0, Dice.Length).All(i => _wasKept[i] || _diceValues[i] != value));
+            if(_isSolved)
+                yield return "solve";
+            yield break;
         }
         else if (command == "roll")
             yield return null;
