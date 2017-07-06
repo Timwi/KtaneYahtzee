@@ -453,27 +453,29 @@ public class YahtzeeModule : MonoBehaviour
         if ((m = Regex.Match(command, @"^roll until (\d)$")).Success)
         {
             var value = int.Parse(m.Groups[1].Value);
-            var iterations = 0;
-            do
+            if (value >= 1 && value <= 6)
             {
-                RollButton.OnInteract();
-                yield return new WaitForSeconds(.1f);
-                if (++iterations > 47)
+                yield return null;
+                var iterations = 0;
+                do
                 {
-                    if(_isSolved)
-                        yield return "solve";
-                    else
+                    RollButton.OnInteract();
+                    yield return new WaitForSeconds(.1f);
+                    if (++iterations > 47)
+                    {
                         yield return "sendtochat Giving up after 47 rolls.";
-                    yield break;
+                        break;
+                    }
                 }
+                while (!_isSolved && Enumerable.Range(0, Dice.Length).All(i => _wasKept[i] || _diceValues[i] != value));
             }
-            while (Enumerable.Range(0, Dice.Length).All(i => _wasKept[i] || _diceValues[i] != value));
-            if(_isSolved)
-                yield return "solve";
-            yield break;
         }
         else if (command == "roll")
+        {
             yield return null;
+            RollButton.OnInteract();
+            yield return new WaitForSeconds(.1f);
+        }
         else if (command.StartsWith("keep "))
         {
             var list = command.Substring(5).Split(',').Select(s =>
@@ -495,13 +497,11 @@ public class YahtzeeModule : MonoBehaviour
                     DiceParent[i].OnInteract();
                     yield return new WaitForSeconds(.1f);
                 }
+            RollButton.OnInteract();
+            yield return new WaitForSeconds(.1f);
         }
-        else
-            yield break;
 
-        RollButton.OnInteract();
         if (_isSolved)
             yield return "solve";
-        yield return new WaitForSeconds(1.5f);
     }
 }
