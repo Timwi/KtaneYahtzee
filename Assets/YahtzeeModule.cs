@@ -70,7 +70,10 @@ public class YahtzeeModule : MonoBehaviour
             // First roll ever?
             if (_lastRolled > 0)
             {
-                Debug.LogFormat("[Yahtzee #{0}] Attempting to keep {1}.", _moduleId, Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).Select(ix => string.Format("{0} ({1})", _diceValues[ix], (DiceColor) ix)).DefaultIfEmpty("nothing").JoinString(", "));
+                Debug.LogFormat("[Yahtzee #{0}] Attempting to keep {1} and rerolling {2}.",
+                    _moduleId,
+                    Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).Select(ix => string.Format("{0}={1}", (DiceColor) ix, _diceValues[ix])).DefaultIfEmpty("nothing").JoinString(", "),
+                    Enumerable.Range(0, Dice.Length).Count(ix => _keptDiceSlot[ix] == null));
 
                 // Trying to keep dice of different values is always invalid
                 int? keptValue = null;
@@ -314,11 +317,6 @@ public class YahtzeeModule : MonoBehaviour
                         }
                         break;
                 }
-
-                Debug.LogFormat("[Yahtzee #{0}] Keeping {1} and rerolling {2} dice.",
-                    _moduleId,
-                    numKeeping == 0 ? "nothing" : string.Format("{0} ({1})", Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).Select(ix => (DiceColor) ix).JoinString(", ", lastSeparator: " and "), keptValue.Value),
-                    numRolling);
             }
             else
                 Debug.LogFormat("[Yahtzee #{0}] Rolling all 5 dice.", _moduleId);
@@ -326,16 +324,15 @@ public class YahtzeeModule : MonoBehaviour
             for (int i = 0; i < Dice.Length; i++)
             {
                 if (_keptDiceSlot[i] == null)
-                {
                     _diceValues[i] = Rnd.Range(1, 7);
-                    Debug.LogFormat("[Yahtzee #{0}] {1} is now a {2}.", _moduleId, (DiceColor) i, _diceValues[i]);
-                }
 
                 var iterations = 0;
                 do { _diceLocations[i] = new Vector3(Rnd.Range(-.063f, .019f), .025f, Rnd.Range(-.069f, .028f)); }
                 while (_diceLocations.Where((loc, ix) => ix < i && (loc - _diceLocations[i]).magnitude < .03f).Any() && ++iterations < 1000);
                 _wasKept[i] = _keptDiceSlot[i] != null;
             }
+
+            Debug.LogFormat("[Yahtzee #{0}] New dice: {1}", _moduleId, Enumerable.Range(0, Dice.Length).Where(i => _keptDiceSlot[i] == null).Select(i => string.Format("{0}={1}", (DiceColor) i, _diceValues[i])).JoinString(", "));
 
             var sorted = Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] == null).OrderBy(ix => _diceLocations[ix].z).ToArray();
             for (int i = 0; i < sorted.Length; i++)
