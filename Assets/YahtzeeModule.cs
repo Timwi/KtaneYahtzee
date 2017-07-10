@@ -369,15 +369,16 @@ public class YahtzeeModule : MonoBehaviour
             if (_isSolved)
                 return false;
 
-            if (_coroutines[i] != null)
-                StopCoroutine(_coroutines[i]);
-
             if (_keptDiceSlot[i] == null)
             {
                 var firstFreeSlot = Enumerable.Range(0, _restingPlaces.Length + 1).First(ix => ix == _restingPlaces.Length || !_keptDiceSlot.Contains(ix));
                 if (firstFreeSlot == _restingPlaces.Length)
                     // The user tried to keep the fifth dice. Just disallow that.
                     return false;
+
+                if (_coroutines[i] != null)
+                    StopCoroutine(_coroutines[i]);
+
                 _keptDiceSlot[i] = firstFreeSlot;
                 _coroutines[i] = StartCoroutine(moveDice(i,
                     startParentRotation: DiceParent[i].transform.localRotation,
@@ -389,6 +390,9 @@ public class YahtzeeModule : MonoBehaviour
             }
             else
             {
+                if (_coroutines[i] != null)
+                    StopCoroutine(_coroutines[i]);
+
                 _keptDiceSlot[i] = null;
                 _coroutines[i] = StartCoroutine(moveDice(i,
                     startParentRotation: DiceParent[i].transform.localRotation,
@@ -417,10 +421,10 @@ public class YahtzeeModule : MonoBehaviour
             endDiceRotation: _rotations[_diceValues[ix] - 1],
             startLocation: startLocation,
             endLocation: _diceLocations[ix],
-            delay: true);
+            delay: true, roll: true);
     }
 
-    private IEnumerator moveDice(int ix, Quaternion startParentRotation, Quaternion endParentRotation, Quaternion startDiceRotation, Quaternion endDiceRotation, Vector3 startLocation, Vector3 endLocation, bool delay = false)
+    private IEnumerator moveDice(int ix, Quaternion startParentRotation, Quaternion endParentRotation, Quaternion startDiceRotation, Quaternion endDiceRotation, Vector3 startLocation, Vector3 endLocation, bool delay = false, bool roll = false)
     {
         if (delay)
         {
@@ -429,10 +433,14 @@ public class YahtzeeModule : MonoBehaviour
             DiceParent[ix].gameObject.SetActive(true);
         }
 
-        var speed = Rnd.Range(1f, 2.2f);
+        var speed = roll ? Rnd.Range(1f, 1.5f) : Rnd.Range(1.5f, 2.2f);
         for (float n = 0; n < 1; n += speed * Time.deltaTime)
         {
-            DiceParent[ix].transform.localPosition = Vector3.Lerp(startLocation, endLocation, easeOutSine(n, 1, 0, 1));
+            var n2 = easeOutSine(n, 1, 0, 1);
+            DiceParent[ix].transform.localPosition = new Vector3(
+                easeOutSine(n, 1, startLocation.x, endLocation.x),
+                n2 * (1 - n2) * .25f + (1 - n2) * startLocation.y + n2 * endLocation.y,
+                easeOutSine(n, 1, startLocation.z, endLocation.z));
             Dice[ix].transform.localRotation = Quaternion.Slerp(startDiceRotation, endDiceRotation, easeOutSine(n, 1, 0, 1));
             DiceParent[ix].transform.localRotation = Quaternion.Slerp(startParentRotation, endParentRotation, easeOutSine(n, 1, 0, 1));
             yield return null;
@@ -489,14 +497,28 @@ public class YahtzeeModule : MonoBehaviour
             // Cannot use .Contains(null) because bug in Mono
             if (list.Any(c => c == null))
                 yield break;
+            // Cannot keep all dice
+            if (list.Length == Dice.Length)
+                yield break;
 
             yield return null;
+
+            // Unkeep first, so that we can guarantee that a slot is available
             for (int i = 0; i < Dice.Length; i++)
-                if (list.Any(dc => dc == (DiceColor) i) != (_keptDiceSlot[i] != null))
+                if (!list.Any(dc => dc == (DiceColor) i) && _keptDiceSlot[i] != null)
                 {
                     DiceParent[i].OnInteract();
                     yield return new WaitForSeconds(.1f);
                 }
+
+            // Keep
+            for (int i = 0; i < Dice.Length; i++)
+                if (list.Any(dc => dc == (DiceColor) i) && _keptDiceSlot[i] == null)
+                {
+                    DiceParent[i].OnInteract();
+                    yield return new WaitForSeconds(.1f);
+                }
+
             RollButton.OnInteract();
             yield return new WaitForSeconds(.1f);
         }
