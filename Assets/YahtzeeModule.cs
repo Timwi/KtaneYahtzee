@@ -64,12 +64,12 @@ public class YahtzeeModule : MonoBehaviour
             if (_isSolved)
                 return false;
 
-            var numKeeping = 0;
-            var numRolling = 0;
-
             // First roll ever?
             if (_lastRolled > 0)
             {
+                var numKeeping = 0;
+                var numRolling = 0;
+
                 Debug.LogFormat("[Yahtzee #{0}] Attempting to keep {1} and rerolling {2}.",
                     _moduleId,
                     Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).Select(ix => string.Format("{0}={1}", (DiceColor) ix, _diceValues[ix])).DefaultIfEmpty("nothing").JoinString(", "),
@@ -486,7 +486,7 @@ public class YahtzeeModule : MonoBehaviour
         }
         else if (command.StartsWith("keep "))
         {
-            var list = command.Substring(5).Split(',').Select(s =>
+            var list = command.Substring(5).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(s =>
             {
                 foreach (var value in Enum.GetValues(typeof(DiceColor)))
                     if (value.ToString().Equals(s, StringComparison.InvariantCultureIgnoreCase))
