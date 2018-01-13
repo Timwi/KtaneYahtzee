@@ -457,6 +457,8 @@ public class YahtzeeModule : MonoBehaviour
         if (_isSolved)
             yield break;
 
+        command = command.ToLowerInvariant();
+
         Match m;
         if ((m = Regex.Match(command, @"^roll until (\d)$")).Success)
         {
