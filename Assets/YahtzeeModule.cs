@@ -452,6 +452,10 @@ public class YahtzeeModule : MonoBehaviour
         _coroutines[ix] = null;
     }
 
+#pragma warning disable 414
+    private string TwitchHelpMessage = @"Roll the unkept dice with “!{0} roll”. Keep some dice (and automatically re-roll the rest) with “!{0} keep white,purple,blue,yellow,black” (this will un-keep kept dice not listed). Roll the remaining dice until a 3 appears with “!{0} roll until 3”.";
+#pragma warning restore 414
+
     private IEnumerator ProcessTwitchCommand(string command)
     {
         if (_isSolved)
