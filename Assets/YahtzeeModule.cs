@@ -453,7 +453,7 @@ public class YahtzeeModule : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private string TwitchHelpMessage = @"Roll the unkept dice with “!{0} roll”. Keep some dice (and automatically re-roll the rest) with “!{0} keep white,purple,blue,yellow,black” (this will un-keep kept dice not listed). Roll the remaining dice until a 3 appears with “!{0} roll until 3”.";
+    private string TwitchHelpMessage = @"Roll the unkept dice with “!{0} roll”. Keep some dice (and automatically re-roll the rest) with “!{0} keep white purple blue yellow black” (this will un-keep kept dice not listed). Roll the remaining dice until a 3 appears with “!{0} roll until 3”. Re-roll all dice with “!{0} reroll”.";
 #pragma warning restore 414
 
     private IEnumerator ProcessTwitchCommand(string command)
@@ -462,6 +462,8 @@ public class YahtzeeModule : MonoBehaviour
             yield break;
 
         command = command.ToLowerInvariant();
+
+        var rerollAll = false;
 
         Match m;
         if ((m = Regex.Match(command, @"^roll until (\d)$")).Success)
@@ -484,15 +486,9 @@ public class YahtzeeModule : MonoBehaviour
                 while (!_isSolved && Enumerable.Range(0, Dice.Length).All(i => _wasKept[i] || _diceValues[i] != value));
             }
         }
-        else if (command == "roll")
+        else if ((command.StartsWith("keep ") || (rerollAll = command == "roll all" || command == "reroll" || command == "reroll all")) && _lastRolled > 0)
         {
-            yield return null;
-            RollButton.OnInteract();
-            yield return new WaitForSeconds(.1f);
-        }
-        else if (command.StartsWith("keep "))
-        {
-            var list = command.Substring(5).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(s =>
+            var list = rerollAll || command.Substring(5) == "none" ? new DiceColor?[0] : command.Substring(5).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(s =>
             {
                 foreach (var value in Enum.GetValues(typeof(DiceColor)))
                     if (value.ToString().Equals(s, StringComparison.InvariantCultureIgnoreCase))
@@ -525,6 +521,12 @@ public class YahtzeeModule : MonoBehaviour
                     yield return new WaitForSeconds(.1f);
                 }
 
+            RollButton.OnInteract();
+            yield return new WaitForSeconds(.1f);
+        }
+        else if (command == "roll" || command == "roll all" || command == "reroll" || command == "reroll all")
+        {
+            yield return null;
             RollButton.OnInteract();
             yield return new WaitForSeconds(.1f);
         }
