@@ -10,13 +10,13 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5cf2299c8864afe4ab42466f546ae20d, type: 3}
   m_Name: WorkshopItem
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   WorkshopPublishedFileID: 961870485
   Title: Yahtzee
   Description: 'Yahtzee!
 
 
-    Module created by Timwi and Rexkix.
+    Module created by Timwi and Rexkix. Sounds by Jr_All_Star.
 
 
     [url=http://ktane.timwi.de/PDF/Yahtzee.pdf]Manual PDF[/url]

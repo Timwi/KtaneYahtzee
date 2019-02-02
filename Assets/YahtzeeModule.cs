@@ -341,6 +341,7 @@ public class YahtzeeModule : MonoBehaviour
                     StopCoroutine(_coroutines[sorted[i]]);
                 _coroutines[sorted[i]] = StartCoroutine(rollDice(new Vector3(-.1f, .1f, -.069f + .1f * i / sorted.Length), sorted[i]));
             }
+            StartCoroutine(playDicerollSound());
 
             _lastRolled = _keptDiceSlot.Count(kept => kept == null);
             if (_diceValues.Distinct().Count() == 1)
@@ -354,6 +355,12 @@ public class YahtzeeModule : MonoBehaviour
 
         for (int i = 0; i < DiceParent.Length; i++)
             DiceParent[i].OnInteract = getDiceHandler(i);
+    }
+
+    private IEnumerator playDicerollSound()
+    {
+        yield return new WaitForSeconds(.5f);
+        Audio.PlaySoundAtTransform("DiceRoll", transform);
     }
 
     private IEnumerator victory()
