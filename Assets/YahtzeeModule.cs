@@ -38,8 +38,8 @@ public class YahtzeeModule : MonoBehaviour
 
     public KMSelectable RollButton;
 
-    private static Vector3[] _restingPlaces = new[] { new Vector3(.06f, .026f, .02f), new Vector3(.06f, .026f, -.005f), new Vector3(.06f, .026f, -.03f), new Vector3(.06f, .026f, -.055f) };
-    private static Quaternion[] _rotations = new[] { Quaternion.Euler(0, 0, 0), Quaternion.Euler(90, 0, 0), Quaternion.Euler(0, 0, 90), Quaternion.Euler(0, 0, 270), Quaternion.Euler(270, 0, 0), Quaternion.Euler(180, 0, 0) };
+    private static readonly Vector3[] _restingPlaces = new[] { new Vector3(.06f, .026f, .02f), new Vector3(.06f, .026f, -.005f), new Vector3(.06f, .026f, -.03f), new Vector3(.06f, .026f, -.055f) };
+    private static readonly Quaternion[] _rotations = new[] { Quaternion.Euler(0, 0, 0), Quaternion.Euler(90, 0, 0), Quaternion.Euler(0, 0, 90), Quaternion.Euler(0, 0, 270), Quaternion.Euler(270, 0, 0), Quaternion.Euler(180, 0, 0) };
 
     private static int _moduleIdCounter = 1;
     private int _moduleId;
@@ -460,7 +460,7 @@ public class YahtzeeModule : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private string TwitchHelpMessage = @"Roll the unkept dice with “!{0} roll”. Keep some dice (and automatically re-roll the rest) with “!{0} keep white purple blue yellow black” (this will un-keep kept dice not listed). Roll the remaining dice until a 3 appears with “!{0} roll until 3”. Re-roll all dice with “!{0} reroll”.";
+    private readonly string TwitchHelpMessage = @"!{0} roll [roll the unkept dice] | !{0} keep white purple blue yellow black [keep these dice, un-keep the others, and reroll] | !{0} roll until 3 [keep rolling the unkept dice until a 3 appears] | !{0} reroll [reroll all dice]";
 #pragma warning restore 414
 
     private IEnumerator ProcessTwitchCommand(string command)
