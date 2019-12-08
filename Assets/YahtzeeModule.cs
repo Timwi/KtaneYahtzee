@@ -414,11 +414,6 @@ public class YahtzeeModule : MonoBehaviour
         };
     }
 
-    private float easeOutSine(float time, float duration, float from, float to)
-    {
-        return (to - from) * Mathf.Sin(time / duration * (Mathf.PI / 2)) + from;
-    }
-
     private IEnumerator rollDice(Vector3 startLocation, int ix)
     {
         return moveDice(ix,
@@ -443,13 +438,13 @@ public class YahtzeeModule : MonoBehaviour
         var speed = roll ? Rnd.Range(1f, 1.5f) : Rnd.Range(1.5f, 2.2f);
         for (float n = 0; n < 1; n += speed * Time.deltaTime)
         {
-            var n2 = easeOutSine(n, 1, 0, 1);
+            var n2 = Easing.OutSine(n, 0, 1, 1);
             DiceParent[ix].transform.localPosition = new Vector3(
-                easeOutSine(n, 1, startLocation.x, endLocation.x),
+                Easing.OutSine(n, startLocation.x, endLocation.x, 1),
                 n2 * (1 - n2) * .25f + (1 - n2) * startLocation.y + n2 * endLocation.y,
-                easeOutSine(n, 1, startLocation.z, endLocation.z));
-            Dice[ix].transform.localRotation = Quaternion.Slerp(startDiceRotation, endDiceRotation, easeOutSine(n, 1, 0, 1));
-            DiceParent[ix].transform.localRotation = Quaternion.Slerp(startParentRotation, endParentRotation, easeOutSine(n, 1, 0, 1));
+                Easing.OutSine(n, startLocation.z, endLocation.z, 1));
+            Dice[ix].transform.localRotation = Quaternion.Slerp(startDiceRotation, endDiceRotation, Easing.OutSine(n, 0, 1, 1));
+            DiceParent[ix].transform.localRotation = Quaternion.Slerp(startParentRotation, endParentRotation, Easing.OutSine(n, 0, 1, 1));
             yield return null;
         }
 
