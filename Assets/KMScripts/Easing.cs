@@ -140,34 +140,4 @@ public static class Easing
         time -= 2;
         return (end - start) / 2 * (Mathf.Sqrt(1 - time * time) + 1) + start;
     }
-
-    public static float InBounce(float time, float start, float end, float duration)
-    {
-        return end - OutBounce(duration - time, start, end, duration);
-    }
-
-    public static float OutBounce(float time, float start, float end, float duration)
-    {
-        const float b1 = 4f / 11f;
-        const float b2 = 6f / 11f;
-        const float b3 = 8f / 11f;
-        const float b4 = 3f / 4f;
-        const float b5 = 9f / 11f;
-        const float b6 = 10f / 11f;
-        const float b7 = 15f / 16f;
-        const float b8 = 21f / 22f;
-        const float b9 = 63f / 64f;
-        const float b0 = 1 / b1 / b1;
-
-        var t = time / duration;
-        var result = t < b1 ? b0 * t * t : t < b3 ? b0 * (t -= b2) * t + b4 : t < b6 ? b0 * (t -= b5) * t + b7 : b0 * (t -= b8) * t + b9;
-        return result * (end - start) + start;
-    }
-
-    public static float InOutBounce(float time, float start, float end, float duration)
-    {
-        var t = time / duration;
-        var result = ((t *= 2) <= 1 ? 1 - OutBounce(1 - t, 0, 1, 1) : OutBounce(t - 1, 0, 1, 1) + 1) / 2;
-        return result * (end - start) + start;
-    }
 }
