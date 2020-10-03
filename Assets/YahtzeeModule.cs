@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -67,255 +68,15 @@ public class YahtzeeModule : MonoBehaviour
             // First roll ever?
             if (_lastRolled > 0)
             {
-                var numKeeping = 0;
-                var numRolling = 0;
-
                 Debug.LogFormat("[Yahtzee #{0}] Attempting to keep {1} and rerolling {2}.",
                     _moduleId,
                     Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).Select(ix => string.Format("{0}={1}", (DiceColor) ix, _diceValues[ix])).DefaultIfEmpty("nothing").JoinString(", "),
                     Enumerable.Range(0, Dice.Length).Count(ix => _keptDiceSlot[ix] == null));
 
-                // Trying to keep dice of different values is always invalid
-                int? keptValue = null;
-                for (int i = 0; i < Dice.Length; i++)
+                if (!IsLegal(kept: Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).ToArray(), logging: true))
                 {
-                    if (_keptDiceSlot[i] != null)
-                    {
-                        numKeeping++;
-                        if (keptValue == null)
-                            keptValue = _diceValues[i];
-                        else if (_diceValues[i] != keptValue.Value)
-                        {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping dice of different values is not allowed. Strike.", _moduleId);
-                            Module.HandleStrike();
-                            return false;
-                        }
-                    }
-                    else
-                        numRolling++;
-                }
-
-                // Check if roll is legal
-                switch (_lastRolled)
-                {
-                    case 5:
-                        int? validValue;
-
-                        // Large straight?
-                        if (_diceValues.Contains(2) && _diceValues.Contains(3) && _diceValues.Contains(4) && _diceValues.Contains(5) && (_diceValues.Contains(1) || _diceValues.Contains(6)))
-                        {
-                            var eligibleValues = Bomb.GetSerialNumberNumbers().Where(_diceValues.Contains);
-                            if (eligibleValues.Any())
-                            {
-                                validValue = eligibleValues.Max();
-                                Debug.LogFormat("[Yahtzee #{0}] Large straight. Serial number contains {1}. Must keep {2}.", _moduleId, eligibleValues.JoinString(", "), validValue);
-                            }
-                            else
-                            {
-                                validValue = _diceValues[(int) DiceColor.Purple];
-                                Debug.LogFormat("[Yahtzee #{0}] Large straight. Serial number contains no match. Must keep value of purple, which is {1}.", _moduleId, validValue);
-                            }
-                        }
-                        // Small straight?
-                        else if (_diceValues.Contains(3) && _diceValues.Contains(4) && (
-                            (_diceValues.Contains(1) && _diceValues.Contains(2)) ||
-                            (_diceValues.Contains(2) && _diceValues.Contains(5)) ||
-                            (_diceValues.Contains(5) && _diceValues.Contains(6))))
-                        {
-                            var numbers = new List<int>(_diceValues);
-                            numbers.Remove(3);
-                            numbers.Remove(4);
-                            // This code will remove EITHER a 5 OR a 1. It can’t remove both because then it would be a Large Straight, which we already checked for before.
-                            numbers.Remove(5);
-                            numbers.Remove(numbers.Remove(2) ? 1 : 6);  // The same is true of 2 and 6, of course.
-                            validValue = numbers[0];
-                            Debug.LogFormat("[Yahtzee #{0}] Small straight. Must keep outlier, which is {1}.", _moduleId, validValue);
-                        }
-                        // Three of a kind (includes full house), but not four of a kind
-                        else if (Enumerable.Range(1, 6).Any(i => _diceValues.Count(val => val == i) == 3))
-                        {
-                            if (Bomb.GetOnIndicators().Count() >= 2)
-                            {
-                                validValue = _diceValues[(int) DiceColor.White];
-                                Debug.LogFormat("[Yahtzee #{0}] Three of a kind and ≥ 2 lit indicators. Must keep value of white, which is {1}.", _moduleId, validValue);
-                            }
-                            else if (Bomb.GetOffIndicators().Count() >= 2)
-                            {
-                                validValue = _diceValues[(int) DiceColor.Black];
-                                Debug.LogFormat("[Yahtzee #{0}] Three of a kind and ≥ 2 unlit indicators. Must keep value of black, which is {1}.", _moduleId, validValue);
-                            }
-                            else
-                            {
-                                validValue = _diceValues.Where(i => _diceValues.Count(val => val == i) < 3).Max();
-                                Debug.LogFormat("[Yahtzee #{0}] Three of a kind and not enough indicators. Must keep highest value not in triplet, which is {1}.", _moduleId, validValue);
-                            }
-                        }
-                        // Four of a kind or two pairs
-                        else if (Enumerable.Range(1, 6).Any(i => _diceValues.Count(val => val == i) == 4) || Enumerable.Range(1, 6).Count(i => _diceValues.Count(val => val == i) == 2) == 2)
-                        {
-                            var batteryCount = Bomb.GetBatteryCount();
-                            var batteryHolderCount = Bomb.GetBatteryHolderCount();
-                            if (_diceValues.Contains(batteryCount))
-                            {
-                                validValue = batteryCount;
-                                Debug.LogFormat("[Yahtzee #{0}] Four of a kind/two pairs and battery count matches. Must keep {1}.", _moduleId, validValue);
-                            }
-                            else if (_diceValues.Contains(batteryHolderCount))
-                            {
-                                validValue = batteryHolderCount;
-                                Debug.LogFormat("[Yahtzee #{0}] Four of a kind/two pairs and battery holder count matches. Must keep {1}.", _moduleId, validValue);
-                            }
-                            else
-                            {
-                                validValue = _diceValues[(int) DiceColor.Yellow];
-                                Debug.LogFormat("[Yahtzee #{0}] Four of a kind/two pairs and no battery/battery holder count match. Must keep value of yellow, which is {1}.", _moduleId, validValue);
-                            }
-                        }
-                        // Pair
-                        else if (Enumerable.Range(1, 6).Any(i => _diceValues.Count(val => val == i) == 2))
-                        {
-                            if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.Parallel))
-                            {
-                                validValue = _diceValues[(int) DiceColor.Purple];
-                                Debug.LogFormat("[Yahtzee #{0}] Pair and parallel port. Must keep value of purple, which is {1}.", _moduleId, validValue);
-                            }
-                            else if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.PS2))
-                            {
-                                validValue = _diceValues[(int) DiceColor.Blue];
-                                Debug.LogFormat("[Yahtzee #{0}] Pair and PS/2 port. Must keep value of blue, which is {1}.", _moduleId, validValue);
-                            }
-                            else if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.StereoRCA))
-                            {
-                                validValue = _diceValues[(int) DiceColor.White];
-                                Debug.LogFormat("[Yahtzee #{0}] Pair and stereo RCA port. Must keep value of white, which is {1}.", _moduleId, validValue);
-                            }
-                            else if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.RJ45))
-                            {
-                                validValue = _diceValues[(int) DiceColor.Black];
-                                Debug.LogFormat("[Yahtzee #{0}] Pair and RJ-45 port. Must keep value of black, which is {1}.", _moduleId, validValue);
-                            }
-                            else
-                            {
-                                validValue = _diceValues[(int) DiceColor.Yellow];
-                                Debug.LogFormat("[Yahtzee #{0}] Pair and no matching port. Must keep value of yellow, which is {1}.", _moduleId, validValue);
-                            }
-                        }
-                        else
-                        {
-                            // Otherwise: must roll all again
-                            validValue = null;
-                        }
-
-                        if (validValue != keptValue)
-                        {
-                            Debug.LogFormat("[Yahtzee #{0}] You tried to keep {1}. Strike.", _moduleId, keptValue == null ? "nothing" : "a " + keptValue.Value);
-                            Module.HandleStrike();
-                            return false;
-                        }
-                        break;
-
-                    case 4:
-                        // Straight (small or large)?
-                        if (_diceValues.Contains(3) && _diceValues.Contains(4) && (
-                            (_diceValues.Contains(1) && _diceValues.Contains(2)) ||
-                            (_diceValues.Contains(2) && _diceValues.Contains(5)) ||
-                            (_diceValues.Contains(5) && _diceValues.Contains(6))))
-                        {
-                            // Must keep a value different from before
-                            var prevKeptValue = _diceValues[Array.IndexOf(_wasKept, true)];
-                            Debug.LogFormat("[Yahtzee #{0}] Straight. Must keep a value different from before.", _moduleId);
-                            if (prevKeptValue == keptValue || keptValue == null)
-                            {
-                                Debug.LogFormat("[Yahtzee #{0}] You tried to keep {1}. Strike.", _moduleId, keptValue == null ? "nothing" : "a " + keptValue.Value);
-                                Module.HandleStrike();
-                                return false;
-                            }
-                        }
-                        // Keep 1 only allowed if it isn’t black (or it’s in the serial)
-                        else if (numKeeping == 1 && _keptDiceSlot[(int) DiceColor.Black] != null && !Bomb.GetSerialNumberNumbers().Contains(keptValue.Value))
-                        {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping 1 dice only allowed if its value is in the serial number, or it’s not black. Strike.", _moduleId);
-                            Module.HandleStrike();
-                            return false;
-                        }
-                        // Keep 2 only allowed if neither is blue (or it’s in the serial)
-                        else if (numKeeping == 2 && _keptDiceSlot[(int) DiceColor.Blue] != null && !Bomb.GetSerialNumberNumbers().Contains(keptValue.Value))
-                        {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping 2 dice only allowed if their value is in the serial number, or neither is blue. Strike.", _moduleId);
-                            Module.HandleStrike();
-                            return false;
-                        }
-                        // Not allowed to keep number of dice equal to number of port plates
-                        else if (numKeeping >= 3 && numKeeping == Bomb.GetPortPlateCount())
-                        {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping {1} dice is not allowed because there are exactly {1} port plates. Strike.", _moduleId, numKeeping);
-                            Module.HandleStrike();
-                            return false;
-                        }
-                        // Keep 3 allowed if the other two both aren’t in the serial number
-                        else if (numKeeping == 3 && Enumerable.Range(0, Dice.Length).Any(ix => _keptDiceSlot[ix] == null && Bomb.GetSerialNumberNumbers().Contains(_diceValues[ix])))
-                        {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping 3 dice only allowed if their value is in the serial number, or neither of the remaining two is in the serial number. Strike.", _moduleId);
-                            Module.HandleStrike();
-                            return false;
-                        }
-                        // Keep 4 allowed if the fifth is bigger
-                        else if (numKeeping == 4 && _diceValues[Array.IndexOf(_keptDiceSlot, null)] <= keptValue.Value)
-                        {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping 4 dice only allowed if the fifth one is bigger. Strike.", _moduleId);
-                            Module.HandleStrike();
-                            return false;
-                        }
-                        break;
-
-                    case 3:
-                        // Full house
-                        if (Enumerable.Range(1, 6).Any(i => _diceValues.Count(val => val == i) == 3) && Enumerable.Range(1, 6).Any(i => _diceValues.Count(val => val == i) == 2))
-                        {
-                            var duplicatePorts = Bomb.GetPortCount() > Bomb.GetPorts().Distinct().Count();
-                            if (duplicatePorts && numKeeping != 3)
-                            {
-                                Debug.LogFormat("[Yahtzee #{0}] Full house and duplicate port. Must reroll the pair. Strike.", _moduleId);
-                                Module.HandleStrike();
-                                return false;
-                            }
-                            else if (!duplicatePorts && (numKeeping != 2 || Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] == null).Select(ix => _diceValues[ix]).Distinct().Count() != 1))
-                            {
-                                Debug.LogFormat("[Yahtzee #{0}] Full house and no duplicate port. Must reroll the triplet. Strike.", _moduleId);
-                                Module.HandleStrike();
-                                return false;
-                            }
-                        }
-                        // Keep 2 always allowed
-                        // Any number of keeps allowed if the kept value is in the serial
-                        else if (numKeeping == 2 || (keptValue != null && Bomb.GetSerialNumberNumbers().Contains(keptValue.Value)))
-                        {
-                        }
-                        // Keep 3 allowed if purple or white was kept in the previous stage
-                        else if (numKeeping == 3 && !_wasKept[(int) DiceColor.Purple] && !_wasKept[(int) DiceColor.White])
-                        {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping 3 only allowed if purple or white was kept in the previous stage. Strike.", _moduleId);
-                            Module.HandleStrike();
-                            return false;
-                        }
-                        // Keep 4 allowed if the fifth is smaller
-                        else if (numKeeping == 4 && _diceValues[Array.IndexOf(_keptDiceSlot, null)] >= keptValue)
-                        {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping 4 only allowed if the fifth value is smaller. Strike.", _moduleId);
-                            Module.HandleStrike();
-                            return false;
-                        }
-                        break;
-
-                    case 2:
-                        // Keep 4 allowed if yellow was kept in the previous stage, or if fifth is 1 away in value from kept value
-                        if (numKeeping == 4 && !_wasKept[(int) DiceColor.Yellow] && !_wasKept[(int) DiceColor.Blue] && _diceValues[Array.IndexOf(_keptDiceSlot, null)] != keptValue.Value - 1 && _diceValues[Array.IndexOf(_keptDiceSlot, null)] != keptValue.Value + 1)
-                        {
-                            Debug.LogFormat("[Yahtzee #{0}] Keeping 4 only allowed if yellow or blue was kept in the previous stage, or if fifth is 1 away in value from kept value. Strike.", _moduleId);
-                            Module.HandleStrike();
-                            return false;
-                        }
-                        break;
+                    Module.HandleStrike();
+                    return false;
                 }
             }
             else
@@ -355,6 +116,267 @@ public class YahtzeeModule : MonoBehaviour
 
         for (int i = 0; i < DiceParent.Length; i++)
             DiceParent[i].OnInteract = getDiceHandler(i);
+    }
+
+    private bool IsLegal(int[] kept, bool logging)
+    {
+        var keptValues = kept.Select(ix => _diceValues[ix]).ToArray();
+        var keptValue = keptValues.Length == 0 ? (int?) null : keptValues[0];
+        var unkept = _diceValues.Except(keptValues).ToArray();
+
+        // Trying to keep dice of different values is always invalid
+        if (keptValues.Any(val => val != keptValue))
+        {
+            if (logging)
+                Debug.LogFormat("[Yahtzee #{0}] Keeping dice of different values is not allowed. Strike.", _moduleId);
+            return false;
+        }
+
+        switch (_lastRolled)
+        {
+            case 5:
+                int? validValue;
+
+                // Large straight?
+                if (_diceValues.Contains(2) && _diceValues.Contains(3) && _diceValues.Contains(4) && _diceValues.Contains(5) && (_diceValues.Contains(1) || _diceValues.Contains(6)))
+                {
+                    var eligibleValues = Bomb.GetSerialNumberNumbers().Where(_diceValues.Contains);
+                    if (eligibleValues.Any())
+                    {
+                        validValue = eligibleValues.Max();
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Large straight. Serial number contains {1}. Must keep {2}.", _moduleId, eligibleValues.JoinString(", "), validValue);
+                    }
+                    else
+                    {
+                        validValue = _diceValues[(int) DiceColor.Purple];
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Large straight. Serial number contains no match. Must keep value of purple, which is {1}.", _moduleId, validValue);
+                    }
+                }
+                // Small straight?
+                else if (_diceValues.Contains(3) && _diceValues.Contains(4) && (
+                    (_diceValues.Contains(1) && _diceValues.Contains(2)) ||
+                    (_diceValues.Contains(2) && _diceValues.Contains(5)) ||
+                    (_diceValues.Contains(5) && _diceValues.Contains(6))))
+                {
+                    var numbers = new List<int>(_diceValues);
+                    numbers.Remove(3);
+                    numbers.Remove(4);
+                    // This code will remove EITHER a 5 OR a 1. It can’t remove both because then it would be a Large Straight, which we already checked for before.
+                    numbers.Remove(5);
+                    numbers.Remove(numbers.Remove(2) ? 1 : 6);  // The same is true of 2 and 6, of course.
+                    validValue = numbers[0];
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] Small straight. Must keep outlier, which is {1}.", _moduleId, validValue);
+                }
+                // Three of a kind (includes full house), but not four of a kind
+                else if (Enumerable.Range(1, 6).Any(i => _diceValues.Count(val => val == i) == 3))
+                {
+                    if (Bomb.GetOnIndicators().Count() >= 2)
+                    {
+                        validValue = _diceValues[(int) DiceColor.White];
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Three of a kind and ≥ 2 lit indicators. Must keep value of white, which is {1}.", _moduleId, validValue);
+                    }
+                    else if (Bomb.GetOffIndicators().Count() >= 2)
+                    {
+                        validValue = _diceValues[(int) DiceColor.Black];
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Three of a kind and ≥ 2 unlit indicators. Must keep value of black, which is {1}.", _moduleId, validValue);
+                    }
+                    else
+                    {
+                        validValue = _diceValues.Where(i => _diceValues.Count(val => val == i) < 3).Max();
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Three of a kind and not enough indicators. Must keep highest value not in triplet, which is {1}.", _moduleId, validValue);
+                    }
+                }
+                // Four of a kind or two pairs
+                else if (Enumerable.Range(1, 6).Any(i => _diceValues.Count(val => val == i) == 4) || Enumerable.Range(1, 6).Count(i => _diceValues.Count(val => val == i) == 2) == 2)
+                {
+                    var batteryCount = Bomb.GetBatteryCount();
+                    var batteryHolderCount = Bomb.GetBatteryHolderCount();
+                    if (_diceValues.Contains(batteryCount))
+                    {
+                        validValue = batteryCount;
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Four of a kind/two pairs and battery count matches. Must keep {1}.", _moduleId, validValue);
+                    }
+                    else if (_diceValues.Contains(batteryHolderCount))
+                    {
+                        validValue = batteryHolderCount;
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Four of a kind/two pairs and battery holder count matches. Must keep {1}.", _moduleId, validValue);
+                    }
+                    else
+                    {
+                        validValue = _diceValues[(int) DiceColor.Yellow];
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Four of a kind/two pairs and no battery/battery holder count match. Must keep value of yellow, which is {1}.", _moduleId, validValue);
+                    }
+                }
+                // Pair
+                else if (Enumerable.Range(1, 6).Any(i => _diceValues.Count(val => val == i) == 2))
+                {
+                    if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.Parallel))
+                    {
+                        validValue = _diceValues[(int) DiceColor.Purple];
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Pair and parallel port. Must keep value of purple, which is {1}.", _moduleId, validValue);
+                    }
+                    else if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.PS2))
+                    {
+                        validValue = _diceValues[(int) DiceColor.Blue];
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Pair and PS/2 port. Must keep value of blue, which is {1}.", _moduleId, validValue);
+                    }
+                    else if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.StereoRCA))
+                    {
+                        validValue = _diceValues[(int) DiceColor.White];
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Pair and stereo RCA port. Must keep value of white, which is {1}.", _moduleId, validValue);
+                    }
+                    else if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.RJ45))
+                    {
+                        validValue = _diceValues[(int) DiceColor.Black];
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Pair and RJ-45 port. Must keep value of black, which is {1}.", _moduleId, validValue);
+                    }
+                    else
+                    {
+                        validValue = _diceValues[(int) DiceColor.Yellow];
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Pair and no matching port. Must keep value of yellow, which is {1}.", _moduleId, validValue);
+                    }
+                }
+                else
+                {
+                    // Otherwise: must roll all again
+                    validValue = null;
+                }
+
+                if (validValue != keptValue)
+                {
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] You tried to keep {1}. Strike.", _moduleId, keptValue == null ? "nothing" : "a " + keptValue.Value);
+                    return false;
+                }
+                break;
+
+            case 4:
+                // Reroll all is allowed
+                if (keptValues.Length == 0)
+                    break;
+
+                // Straight (small or large)?
+                if (_diceValues.Contains(3) && _diceValues.Contains(4) && (
+                    (_diceValues.Contains(1) && _diceValues.Contains(2)) ||
+                    (_diceValues.Contains(2) && _diceValues.Contains(5)) ||
+                    (_diceValues.Contains(5) && _diceValues.Contains(6))))
+                {
+                    // Must keep a value different from before
+                    var prevKeptValue = _diceValues[Array.IndexOf(_wasKept, true)];
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] Straight. Must keep a value different from before.", _moduleId);
+                    if (prevKeptValue == keptValue || keptValue == null)
+                    {
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] You tried to keep {1}. Strike.", _moduleId, keptValue == null ? "nothing" : "a " + keptValue.Value);
+                        return false;
+                    }
+                }
+                // Keep 1 only allowed if it isn’t black or it’s in the serial
+                else if (keptValues.Length == 1 && kept[0] == (int) DiceColor.Black && !Bomb.GetSerialNumberNumbers().Contains(keptValue.Value))
+                {
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] Keeping 1 dice only allowed if its value is in the serial number, or it’s not black. Strike.", _moduleId);
+                    return false;
+                }
+                // Keep 2 only allowed if neither is blue or it’s in the serial
+                else if (keptValues.Length == 2 && kept.Contains((int) DiceColor.Blue) && !Bomb.GetSerialNumberNumbers().Contains(keptValue.Value))
+                {
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] Keeping 2 dice only allowed if their value is in the serial number, or neither is blue. Strike.", _moduleId);
+                    return false;
+                }
+                // Not allowed to keep number of dice equal to number of port plates
+                else if (keptValues.Length >= 3 && keptValues.Length == Bomb.GetPortPlateCount())
+                {
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] Keeping {1} dice is not allowed because there are exactly {1} port plates. Strike.", _moduleId, keptValues.Length);
+                    return false;
+                }
+                // Keep 3 allowed if the other two both aren’t in the serial number
+                else if (keptValues.Length == 3 && unkept.All(val => !Bomb.GetSerialNumberNumbers().Contains(val)))
+                {
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] Keeping 3 dice only allowed if neither of the remaining two is in the serial number. Strike.", _moduleId);
+                    return false;
+                }
+                // Keep 4 allowed if the fifth is bigger
+                else if (keptValues.Length == 4 && unkept[0] <= keptValue.Value)
+                {
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] Keeping 4 dice only allowed if the fifth one is bigger. Strike.", _moduleId);
+                    return false;
+                }
+                break;
+
+            case 3:
+                // Reroll all is allowed
+                if (keptValues.Length == 0)
+                    break;
+
+                // Full house
+                if (Enumerable.Range(1, 6).Any(i => _diceValues.Count(val => val == i) == 3) && Enumerable.Range(1, 6).Any(i => _diceValues.Count(val => val == i) == 2))
+                {
+                    var duplicatePorts = Bomb.GetPortCount() > Bomb.GetPorts().Distinct().Count();
+                    if (duplicatePorts && keptValues.Length != 3)
+                    {
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Full house and duplicate port. Must reroll the pair. Strike.", _moduleId);
+                        return false;
+                    }
+                    else if (!duplicatePorts && (keptValues.Length != 2 || unkept.Contains(keptValue.Value)))
+                    {
+                        if (logging)
+                            Debug.LogFormat("[Yahtzee #{0}] Full house and no duplicate port. Must reroll the triplet. Strike.", _moduleId);
+                        return false;
+                    }
+                }
+                // Keep 2 always allowed
+                // Any number of keeps allowed if the kept value is in the serial
+                else if (keptValues.Length == 2 || (keptValue != null && Bomb.GetSerialNumberNumbers().Contains(keptValue.Value)))
+                {
+                }
+                // Keep 3 allowed if purple or white was kept in the previous stage
+                else if (keptValues.Length == 3 && !_wasKept[(int) DiceColor.Purple] && !_wasKept[(int) DiceColor.White])
+                {
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] Keeping 3 only allowed if purple or white was kept in the previous stage. Strike.", _moduleId);
+                    return false;
+                }
+                // Keep 4 allowed if the fifth is smaller
+                else if (keptValues.Length == 4 && unkept[0] >= keptValue)
+                {
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] Keeping 4 only allowed if the fifth value is smaller. Strike.", _moduleId);
+                    return false;
+                }
+                break;
+
+            case 2:
+                // Keep 4 allowed if yellow or blue was kept in the previous stage, or if fifth is 1 away in value from kept value
+                if (keptValues.Length == 4 && !_wasKept[(int) DiceColor.Yellow] && !_wasKept[(int) DiceColor.Blue] && unkept[0] != keptValue.Value - 1 && unkept[0] != keptValue.Value + 1)
+                {
+                    if (logging)
+                        Debug.LogFormat("[Yahtzee #{0}] Keeping 4 only allowed if yellow or blue was kept in the previous stage, or if fifth is 1 away in value from kept value. Strike.", _moduleId);
+                    return false;
+                }
+                break;
+        }
+        return true;
     }
 
     private IEnumerator playDicerollSound()
@@ -535,5 +557,57 @@ public class YahtzeeModule : MonoBehaviour
 
         if (_isSolved)
             yield return "solve";
+    }
+
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        if (_isSolved)
+            yield break;
+
+        // First roll ever?
+        if (_lastRolled == 0)
+            RollButton.OnInteract();
+
+        while (!_isSolved)
+        {
+            while (_coroutines.Any(c => c != null))
+                yield return true;
+
+            if (_lastRolled == 1)
+            {
+                while (!_isSolved)
+                {
+                    RollButton.OnInteract();
+                    yield return true;
+                }
+                yield break;
+            }
+
+            var diceToKeep = Enumerable.Range(0, 1 << Dice.Length)
+                .Select(constellation => Enumerable.Range(0, Dice.Length).Where(ix => (constellation & (1 << ix)) != 0).ToArray())
+                .Where(toKeep => IsLegal(kept: toKeep, logging: false))
+                .OrderByDescending(toKeep => toKeep.Length)
+                .FirstOrDefault();
+
+            // Unselect dice first to free up slots in the keep area
+            for (var i = 0; i < 5; i++)
+                if (_keptDiceSlot[i] != null && !diceToKeep.Contains(i))
+                {
+                    DiceParent[i].OnInteract();
+                    yield return new WaitForSeconds(.1f);
+                }
+
+            // THEN select the dice we want to keep
+            for (var i = 0; i < 5; i++)
+                if (_keptDiceSlot[i] == null && diceToKeep.Contains(i))
+                {
+                    DiceParent[i].OnInteract();
+                    yield return new WaitForSeconds(.1f);
+                }
+
+            while (_coroutines.Any(c => c != null))
+                yield return true;
+            RollButton.OnInteract();
+        }
     }
 }
