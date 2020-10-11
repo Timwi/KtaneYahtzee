@@ -308,7 +308,7 @@ public class YahtzeeModule : MonoBehaviour
                     return false;
                 }
                 // Keep 3 allowed if the other two both aren’t in the serial number
-                else if (keptValues.Length == 3 && unkept.All(val => !Bomb.GetSerialNumberNumbers().Contains(val)))
+                else if (keptValues.Length == 3 && unkept.Any(val => Bomb.GetSerialNumberNumbers().Contains(val)))
                 {
                     if (logging)
                         Debug.LogFormat("[Yahtzee #{0}] Keeping 3 dice only allowed if neither of the remaining two is in the serial number. Strike.", _moduleId);
