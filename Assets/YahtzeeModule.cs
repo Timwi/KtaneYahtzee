@@ -122,7 +122,7 @@ public class YahtzeeModule : MonoBehaviour
     {
         var keptValues = kept.Select(ix => _diceValues[ix]).ToArray();
         var keptValue = keptValues.Length == 0 ? (int?) null : keptValues[0];
-        var unkept = _diceValues.Except(keptValues).ToArray();
+        var unkept = Enumerable.Range(0, 5).Where(i => !kept.Contains(i)).Select(ix => _diceValues[ix]).ToArray();
 
         // Trying to keep dice of different values is always invalid
         if (keptValues.Any(val => val != keptValue))
