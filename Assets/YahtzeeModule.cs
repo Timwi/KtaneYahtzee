@@ -287,17 +287,17 @@ public class YahtzeeModule : MonoBehaviour
                     }
                 }
                 // Keep 1 only allowed if it isn’t black or it’s in the serial
-                else if (keptValues.Length == 1 && kept[0] == (int) DiceColor.Black && !Bomb.GetSerialNumberNumbers().Contains(keptValue.Value))
+                else if (keptValues.Length == 1 && kept[0] == (int) DiceColor.Black)
                 {
                     if (logging)
-                        Debug.LogFormat("[Yahtzee #{0}] Keeping 1 dice only allowed if its value is in the serial number, or it’s not black. Strike.", _moduleId);
+                        Debug.LogFormat("[Yahtzee #{0}] Keeping 1 dice only allowed if it’s not black. Strike.", _moduleId);
                     return false;
                 }
                 // Keep 2 only allowed if neither is blue or it’s in the serial
-                else if (keptValues.Length == 2 && kept.Contains((int) DiceColor.Blue) && !Bomb.GetSerialNumberNumbers().Contains(keptValue.Value))
+                else if (keptValues.Length == 2 && kept.Contains((int) DiceColor.Blue))
                 {
                     if (logging)
-                        Debug.LogFormat("[Yahtzee #{0}] Keeping 2 dice only allowed if their value is in the serial number, or neither is blue. Strike.", _moduleId);
+                        Debug.LogFormat("[Yahtzee #{0}] Keeping 2 dice only allowed if neither is blue. Strike.", _moduleId);
                     return false;
                 }
                 // Not allowed to keep number of dice equal to number of port plates
@@ -345,9 +345,9 @@ public class YahtzeeModule : MonoBehaviour
                         return false;
                     }
                 }
-                // Keep 2 always allowed
+                // Keep 1 or 2 always allowed
                 // Any number of keeps allowed if the kept value is in the serial
-                else if (keptValues.Length == 2 || (keptValue != null && Bomb.GetSerialNumberNumbers().Contains(keptValue.Value)))
+                else if (keptValues.Length <= 2 || (keptValue != null && Bomb.GetSerialNumberNumbers().Contains(keptValue.Value)))
                 {
                 }
                 // Keep 3 allowed if purple or white was kept in the previous stage
