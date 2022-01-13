@@ -477,7 +477,7 @@ public class YahtzeeModule : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} roll [roll the unkept dice] | !{0} keep white purple blue yellow black [keep these dice, un-keep the others, and reroll] | !{0} roll until 3 [keep rolling the unkept dice until a 3 appears] | !{0} reroll [reroll all dice]";
+    private readonly string TwitchHelpMessage = @"!{0} roll [roll the unkept dice] | !{0} keep white purple blue yellow black [keep these dice, un-keep the others, and reroll] | !{0} add white purple blue yellow black [add these dice to the kept dice without un-kepeing the others, and reroll] | !{0} roll until 3 [keep rolling the unkept dice until a 3 appears] | !{0} reroll [reroll all dice]";
 #pragma warning restore 414
 
     private IEnumerator ProcessTwitchCommand(string command)
@@ -510,9 +510,10 @@ public class YahtzeeModule : MonoBehaviour
                 while (!_isSolved && Enumerable.Range(0, Dice.Length).All(i => _wasKept[i] || _diceValues[i] != value));
             }
         }
-        else if ((command.StartsWith("keep ") || (rerollAll = command == "roll all" || command == "reroll" || command == "reroll all")) && _lastRolled > 0)
+        else if ((command.StartsWith("keep ") || command.StartsWith("add ") || (rerollAll = command == "roll all" || command == "reroll" || command == "reroll all")) && _lastRolled > 0)
         {
-            var list = rerollAll || command.Substring(5) == "none" ? new DiceColor?[0] : command.Substring(5).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(s =>
+            var substVal = command.StartsWith("keep ") ? 5 : 4;
+            var list = rerollAll || command.Substring(substVal) == "none" ? new DiceColor?[0] : command.Substring(substVal).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(s =>
             {
                 foreach (var value in Enum.GetValues(typeof(DiceColor)))
                     if (value.ToString().Equals(s, StringComparison.InvariantCultureIgnoreCase))
@@ -530,13 +531,15 @@ public class YahtzeeModule : MonoBehaviour
             yield return null;
 
             // Unkeep first, so that we can guarantee that a slot is available
-            for (int i = 0; i < Dice.Length; i++)
-                if (!list.Any(dc => dc == (DiceColor) i) && _keptDiceSlot[i] != null)
-                {
-                    DiceParent[i].OnInteract();
-                    yield return new WaitForSeconds(.1f);
-                }
-
+            if (!command.StartsWith("add "))
+            {
+                for (int i = 0; i < Dice.Length; i++)
+                    if (!list.Any(dc => dc == (DiceColor) i) && _keptDiceSlot[i] != null)
+                    {
+                        DiceParent[i].OnInteract();
+                        yield return new WaitForSeconds(.1f);
+                    }
+            }
             // Keep
             for (int i = 0; i < Dice.Length; i++)
                 if (list.Any(dc => dc == (DiceColor) i) && _keptDiceSlot[i] == null)
@@ -544,7 +547,6 @@ public class YahtzeeModule : MonoBehaviour
                     DiceParent[i].OnInteract();
                     yield return new WaitForSeconds(.1f);
                 }
-
             RollButton.OnInteract();
             yield return new WaitForSeconds(.1f);
         }
