@@ -70,7 +70,7 @@ public class YahtzeeModule : MonoBehaviour
             {
                 Debug.LogFormat("[Yahtzee #{0}] Attempting to keep {1} and rerolling {2}.",
                     _moduleId,
-                    Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).Select(ix => string.Format("{0}={1}", (DiceColor) ix, _diceValues[ix])).DefaultIfEmpty("nothing").JoinString(", "),
+                    Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).Select(ix => string.Format("{0}={1}", (DiceColor)ix, _diceValues[ix])).DefaultIfEmpty("nothing").JoinString(", "),
                     Enumerable.Range(0, Dice.Length).Count(ix => _keptDiceSlot[ix] == null));
 
                 if (!IsLegal(kept: Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] != null).ToArray(), logging: true))
@@ -93,7 +93,7 @@ public class YahtzeeModule : MonoBehaviour
                 _wasKept[i] = _keptDiceSlot[i] != null;
             }
 
-            Debug.LogFormat("[Yahtzee #{0}] New dice: {1}", _moduleId, Enumerable.Range(0, Dice.Length).Where(i => _keptDiceSlot[i] == null).Select(i => string.Format("{0}={1}", (DiceColor) i, _diceValues[i])).JoinString(", "));
+            Debug.LogFormat("[Yahtzee #{0}] New dice: {1}", _moduleId, Enumerable.Range(0, Dice.Length).Where(i => _keptDiceSlot[i] == null).Select(i => string.Format("{0}={1}", (DiceColor)i, _diceValues[i])).JoinString(", "));
 
             var sorted = Enumerable.Range(0, Dice.Length).Where(ix => _keptDiceSlot[ix] == null).OrderBy(ix => _diceLocations[ix].z).ToArray();
             for (int i = 0; i < sorted.Length; i++)
@@ -121,7 +121,7 @@ public class YahtzeeModule : MonoBehaviour
     private bool IsLegal(int[] kept, bool logging)
     {
         var keptValues = kept.Select(ix => _diceValues[ix]).ToArray();
-        var keptValue = keptValues.Length == 0 ? (int?) null : keptValues[0];
+        var keptValue = keptValues.Length == 0 ? (int?)null : keptValues[0];
         var unkept = Enumerable.Range(0, 5).Where(i => !kept.Contains(i)).Select(ix => _diceValues[ix]).ToArray();
 
         // Trying to keep dice of different values is always invalid
@@ -149,7 +149,7 @@ public class YahtzeeModule : MonoBehaviour
                     }
                     else
                     {
-                        validValue = _diceValues[(int) DiceColor.Purple];
+                        validValue = _diceValues[(int)DiceColor.Purple];
                         if (logging)
                             Debug.LogFormat("[Yahtzee #{0}] Large straight. Serial number contains no match. Must keep value of purple, which is {1}.", _moduleId, validValue);
                     }
@@ -175,13 +175,13 @@ public class YahtzeeModule : MonoBehaviour
                 {
                     if (Bomb.GetOnIndicators().Count() >= 2)
                     {
-                        validValue = _diceValues[(int) DiceColor.White];
+                        validValue = _diceValues[(int)DiceColor.White];
                         if (logging)
                             Debug.LogFormat("[Yahtzee #{0}] Three of a kind and ≥ 2 lit indicators. Must keep value of white, which is {1}.", _moduleId, validValue);
                     }
                     else if (Bomb.GetOffIndicators().Count() >= 2)
                     {
-                        validValue = _diceValues[(int) DiceColor.Black];
+                        validValue = _diceValues[(int)DiceColor.Black];
                         if (logging)
                             Debug.LogFormat("[Yahtzee #{0}] Three of a kind and ≥ 2 unlit indicators. Must keep value of black, which is {1}.", _moduleId, validValue);
                     }
@@ -211,7 +211,7 @@ public class YahtzeeModule : MonoBehaviour
                     }
                     else
                     {
-                        validValue = _diceValues[(int) DiceColor.Yellow];
+                        validValue = _diceValues[(int)DiceColor.Yellow];
                         if (logging)
                             Debug.LogFormat("[Yahtzee #{0}] Four of a kind/two pairs and no battery/battery holder count match. Must keep value of yellow, which is {1}.", _moduleId, validValue);
                     }
@@ -221,31 +221,31 @@ public class YahtzeeModule : MonoBehaviour
                 {
                     if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.Parallel))
                     {
-                        validValue = _diceValues[(int) DiceColor.Purple];
+                        validValue = _diceValues[(int)DiceColor.Purple];
                         if (logging)
                             Debug.LogFormat("[Yahtzee #{0}] Pair and parallel port. Must keep value of purple, which is {1}.", _moduleId, validValue);
                     }
                     else if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.PS2))
                     {
-                        validValue = _diceValues[(int) DiceColor.Blue];
+                        validValue = _diceValues[(int)DiceColor.Blue];
                         if (logging)
                             Debug.LogFormat("[Yahtzee #{0}] Pair and PS/2 port. Must keep value of blue, which is {1}.", _moduleId, validValue);
                     }
                     else if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.StereoRCA))
                     {
-                        validValue = _diceValues[(int) DiceColor.White];
+                        validValue = _diceValues[(int)DiceColor.White];
                         if (logging)
                             Debug.LogFormat("[Yahtzee #{0}] Pair and stereo RCA port. Must keep value of white, which is {1}.", _moduleId, validValue);
                     }
                     else if (Bomb.IsPortPresent(KMBombInfoExtensions.KnownPortType.RJ45))
                     {
-                        validValue = _diceValues[(int) DiceColor.Black];
+                        validValue = _diceValues[(int)DiceColor.Black];
                         if (logging)
                             Debug.LogFormat("[Yahtzee #{0}] Pair and RJ-45 port. Must keep value of black, which is {1}.", _moduleId, validValue);
                     }
                     else
                     {
-                        validValue = _diceValues[(int) DiceColor.Yellow];
+                        validValue = _diceValues[(int)DiceColor.Yellow];
                         if (logging)
                             Debug.LogFormat("[Yahtzee #{0}] Pair and no matching port. Must keep value of yellow, which is {1}.", _moduleId, validValue);
                     }
@@ -287,14 +287,14 @@ public class YahtzeeModule : MonoBehaviour
                     }
                 }
                 // Keep 1 only allowed if it isn’t black or it’s in the serial
-                else if (keptValues.Length == 1 && kept[0] == (int) DiceColor.Black)
+                else if (keptValues.Length == 1 && kept[0] == (int)DiceColor.Black)
                 {
                     if (logging)
                         Debug.LogFormat("[Yahtzee #{0}] Keeping 1 dice only allowed if it’s not black. Strike.", _moduleId);
                     return false;
                 }
                 // Keep 2 only allowed if neither is blue or it’s in the serial
-                else if (keptValues.Length == 2 && kept.Contains((int) DiceColor.Blue))
+                else if (keptValues.Length == 2 && kept.Contains((int)DiceColor.Blue))
                 {
                     if (logging)
                         Debug.LogFormat("[Yahtzee #{0}] Keeping 2 dice only allowed if neither is blue. Strike.", _moduleId);
@@ -351,7 +351,7 @@ public class YahtzeeModule : MonoBehaviour
                 {
                 }
                 // Keep 3 allowed if purple or white was kept in the previous stage
-                else if (keptValues.Length == 3 && !_wasKept[(int) DiceColor.Purple] && !_wasKept[(int) DiceColor.White])
+                else if (keptValues.Length == 3 && !_wasKept[(int)DiceColor.Purple] && !_wasKept[(int)DiceColor.White])
                 {
                     if (logging)
                         Debug.LogFormat("[Yahtzee #{0}] Keeping 3 only allowed if purple or white was kept in the previous stage. Strike.", _moduleId);
@@ -368,7 +368,7 @@ public class YahtzeeModule : MonoBehaviour
 
             case 2:
                 // Keep 4 allowed if yellow or blue was kept in the previous stage, or if fifth is 1 away in value from kept value
-                if (keptValues.Length == 4 && !_wasKept[(int) DiceColor.Yellow] && !_wasKept[(int) DiceColor.Blue] && unkept[0] != keptValue.Value - 1 && unkept[0] != keptValue.Value + 1)
+                if (keptValues.Length == 4 && !_wasKept[(int)DiceColor.Yellow] && !_wasKept[(int)DiceColor.Blue] && unkept[0] != keptValue.Value - 1 && unkept[0] != keptValue.Value + 1)
                 {
                     if (logging)
                         Debug.LogFormat("[Yahtzee #{0}] Keeping 4 only allowed if yellow or blue was kept in the previous stage, or if fifth is 1 away in value from kept value. Strike.", _moduleId);
@@ -477,7 +477,7 @@ public class YahtzeeModule : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} roll [roll the unkept dice] | !{0} keep white purple blue yellow black [keep these dice, un-keep the others, and reroll] | !{0} roll until 3 [keep rolling the unkept dice until a 3 appears] | !{0} reroll [reroll all dice]";
+    private readonly string TwitchHelpMessage = @"!{0} roll [roll the unkept dice] | !{0} keep white purple blue yellow black [keep these dice, un-keep the others, and reroll] | !{0} add white purple blue yellow black [add these dice to the kept dice without un-kepeing the others, and reroll] | !{0} roll until 3 [keep rolling the unkept dice until a 3 appears] | !{0} reroll [reroll all dice]";
 #pragma warning restore 414
 
     private IEnumerator ProcessTwitchCommand(string command)
@@ -510,9 +510,10 @@ public class YahtzeeModule : MonoBehaviour
                 while (!_isSolved && Enumerable.Range(0, Dice.Length).All(i => _wasKept[i] || _diceValues[i] != value));
             }
         }
-        else if ((command.StartsWith("keep ") || (rerollAll = command == "roll all" || command == "reroll" || command == "reroll all")) && _lastRolled > 0)
+        else if ((command.StartsWith("keep ") || command.StartsWith("add ") || (rerollAll = command == "roll all" || command == "reroll" || command == "reroll all")) && _lastRolled > 0)
         {
-            var list = rerollAll || command.Substring(5) == "none" ? new DiceColor?[0] : command.Substring(5).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(s =>
+            var substVal = command.StartsWith("keep ") ? 5 : 4;
+            var list = rerollAll || command.Substring(substVal) == "none" ? new DiceColor?[0] : command.Substring(substVal).Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(s =>
             {
                 foreach (var value in Enum.GetValues(typeof(DiceColor)))
                     if (value.ToString().Equals(s, StringComparison.InvariantCultureIgnoreCase))
@@ -530,21 +531,22 @@ public class YahtzeeModule : MonoBehaviour
             yield return null;
 
             // Unkeep first, so that we can guarantee that a slot is available
-            for (int i = 0; i < Dice.Length; i++)
-                if (!list.Any(dc => dc == (DiceColor) i) && _keptDiceSlot[i] != null)
-                {
-                    DiceParent[i].OnInteract();
-                    yield return new WaitForSeconds(.1f);
-                }
-
+            if (!command.StartsWith("add "))
+            {
+                for (int i = 0; i < Dice.Length; i++)
+                    if (!list.Any(dc => dc == (DiceColor)i) && _keptDiceSlot[i] != null)
+                    {
+                        DiceParent[i].OnInteract();
+                        yield return new WaitForSeconds(.1f);
+                    }
+            }
             // Keep
             for (int i = 0; i < Dice.Length; i++)
-                if (list.Any(dc => dc == (DiceColor) i) && _keptDiceSlot[i] == null)
+                if (list.Any(dc => dc == (DiceColor)i) && _keptDiceSlot[i] == null)
                 {
                     DiceParent[i].OnInteract();
                     yield return new WaitForSeconds(.1f);
                 }
-
             RollButton.OnInteract();
             yield return new WaitForSeconds(.1f);
         }
