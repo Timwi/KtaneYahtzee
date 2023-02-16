@@ -477,7 +477,7 @@ public class YahtzeeModule : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} roll [roll the unkept dice] | !{0} keep white purple blue yellow black [keep these dice, un-keep the others, and reroll] | !{0} add white purple blue yellow black [add these dice to the kept dice without un-kepeing the others, and reroll] | !{0} roll until 3 [keep rolling the unkept dice until a 3 appears] | !{0} reroll [reroll all dice]";
+    private readonly string TwitchHelpMessage = @"!{0} roll [roll the unkept dice] | !{0} keep white purple blue yellow black [keep these dice, un-keep the others, and reroll] | !{0} add white purple blue yellow black [add these dice to the kept dice without un-keeping the others, and reroll] | !{0} roll until 3 [keep rolling the unkept dice until a 3 appears] | !{0} reroll [reroll all dice]";
 #pragma warning restore 414
 
     private IEnumerator ProcessTwitchCommand(string command)
