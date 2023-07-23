@@ -36,6 +36,8 @@ public class YahtzeeModule : MonoBehaviour
     private int _lastRolled;
     private bool _isSolved;
     private Coroutine[] _coroutines;
+    private bool _isTp;
+    private bool _canSolve;
 
     public KMSelectable RollButton;
 
@@ -388,7 +390,10 @@ public class YahtzeeModule : MonoBehaviour
     private IEnumerator victory()
     {
         yield return new WaitForSeconds(1f);
-        Module.HandlePass();
+        if (_isTp)
+            _canSolve = true;
+        else
+            Module.HandlePass();
     }
 
     private KMSelectable.OnInteractHandler getDiceHandler(int i)
@@ -477,17 +482,31 @@ public class YahtzeeModule : MonoBehaviour
     }
 
 #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"!{0} roll [roll the unkept dice] | !{0} keep white purple blue yellow black [keep these dice, un-keep the others, and reroll] | !{0} add white purple blue yellow black [add these dice to the kept dice without un-keeping the others, and reroll] | !{0} roll until 3 [keep rolling the unkept dice until a 3 appears] | !{0} reroll [reroll all dice]";
+    private readonly string TwitchHelpMessage = @"!{0} roll [roll the unkept dice] | !{0} keep white purple blue yellow black [keep these dice, un-keep the others, and reroll] | !{0} add white purple blue yellow black [add these dice to the kept dice without un-keeping the others, and reroll] | !{0} roll until 3 [keep rolling the unkept dice until a 3 appears] | !{0} reroll [reroll all dice] | !{0} done [solve]";
 #pragma warning restore 414
 
     private IEnumerator ProcessTwitchCommand(string command)
     {
-        if (_isSolved)
-            yield break;
+        _isTp = true;
 
         command = command.ToLowerInvariant();
 
         var rerollAll = false;
+
+        if (command.Trim() == "done")
+        {
+            if (!_canSolve)
+                yield return "sendtochaterror You need to achieve a Yahtzee (5 of a kind) first.";
+            else
+            {
+                yield return null;
+                Module.HandlePass();
+            }
+            yield break;
+        }
+
+        if (_isSolved)
+            yield break;
 
         Match m;
         if ((m = Regex.Match(command, @"^roll until (\d)$")).Success)
@@ -558,7 +577,7 @@ public class YahtzeeModule : MonoBehaviour
         }
 
         if (_isSolved)
-            yield return "solve";
+            yield return "sendtochat @{0}, looks like you achieved a Yahtzee. Say !{1} done to solve the module.";
     }
 
     IEnumerator TwitchHandleForcedSolve()
