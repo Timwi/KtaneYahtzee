@@ -36,7 +36,7 @@ public class YahtzeeModule : MonoBehaviour
     private int _lastRolled;
     private bool _isSolved;
     private Coroutine[] _coroutines;
-    private bool _isTp;
+    private bool _isAutoSolved;
     private bool _canSolve;
 
     public KMSelectable RollButton;
@@ -390,7 +390,7 @@ public class YahtzeeModule : MonoBehaviour
     private IEnumerator victory()
     {
         yield return new WaitForSeconds(1f);
-        if (_isTp)
+        if (TwitchPlaysActive && !_isAutoSolved)
             _canSolve = true;
         else
             Module.HandlePass();
@@ -482,13 +482,14 @@ public class YahtzeeModule : MonoBehaviour
     }
 
 #pragma warning disable 414
+#pragma warning disable 649
     private readonly string TwitchHelpMessage = @"!{0} roll [roll the unkept dice] | !{0} keep white purple blue yellow black [keep these dice, un-keep the others, and reroll] | !{0} add white purple blue yellow black [add these dice to the kept dice without un-keeping the others, and reroll] | !{0} roll until 3 [keep rolling the unkept dice until a 3 appears] | !{0} reroll [reroll all dice] | !{0} done [solve]";
+    private bool TwitchPlaysActive;
+#pragma warning restore 649
 #pragma warning restore 414
 
     private IEnumerator ProcessTwitchCommand(string command)
     {
-        _isTp = true;
-
         command = command.ToLowerInvariant();
 
         var rerollAll = false;
@@ -582,6 +583,7 @@ public class YahtzeeModule : MonoBehaviour
 
     IEnumerator TwitchHandleForcedSolve()
     {
+        _isAutoSolved = true;
         if (_isSolved)
             yield break;
 
